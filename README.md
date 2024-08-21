@@ -45,48 +45,7 @@ The system architecture consists of the following components:
 
 1. Navigate to the Lambda service.
 2. Create a new Lambda function with Python 3.x runtime.
-3. Use the following code for the Lambda function:
-
-    ```python
-    import json
-    import boto3
-    import uuid
-    from datetime import datetime
-
-    dynamodb = boto3.resource('dynamodb')
-    s3 = boto3.client('s3')
-    table = dynamodb.Table('Orders')
-
-    def lambda_handler(event, context):
-        for record in event['Records']:
-            payload = json.loads(record['kinesis']['data'])
-            
-            # Processing order data
-            order_id = str(uuid.uuid4())
-            order_data = {
-                'OrderID': order_id,
-                'CustomerID': payload['customer_id'],
-                'OrderAmount': payload['amount'],
-                'OrderDate': datetime.now().isoformat()
-            }
-            
-            # Store the processed data in DynamoDB
-            table.put_item(Item=order_data)
-            
-            # Archive the raw data in S3
-            s3.put_object(
-                Bucket='order-data-archive',
-                Key=f'orders/{order_id}.json',
-                Body=json.dumps(payload)
-            )
-        
-        return {
-            'statusCode': 200,
-            'body': json.dumps('Order processed successfully!')
-        }
-    ```
-
-4. Set up a Kinesis trigger for the Lambda function using the `OrderStream`.
+3. Set up a Kinesis trigger for the Lambda function using the `OrderStream`.
 
 ## Testing
 
